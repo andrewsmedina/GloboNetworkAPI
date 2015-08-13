@@ -617,14 +617,11 @@ class RequisicaoVips(BaseModel):
 
         for pool in pools:
 
-            try:
-                # Avoid Pool without Old Healthcheck Data From Database
-                healthcheck = pool.healthcheck
-            except Healthcheck.DoesNotExist:
-                continue
+            healthcheck = pool.healthcheck
 
-            priority = priority_keys.get(healthcheck.healthcheck_type, 2)
-            priority_pools.append((priority, pool.id, pool))
+            if healthcheck:
+                priority = priority_keys.get(healthcheck.healthcheck_type, 2)
+                priority_pools.append((priority, pool.id, pool))
 
         if priority_pools:
             priority_number, priority_pool_id, priority_pool = min(priority_pools, key=lambda itens: itens[0])
