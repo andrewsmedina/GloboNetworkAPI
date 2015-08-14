@@ -34,6 +34,7 @@ from networkapi.settings import VLAN_CREATE, NETWORKIPV4_CREATE,\
     NETWORKIPV6_CREATE
 from networkapi.equipamento.models import Equipamento
 from networkapi.vlan.serializers import VlanSerializer
+import sys
 
 
 class VlanCreateResource(RestResource):
@@ -180,7 +181,9 @@ class VlanCreateResource(RestResource):
             data_to_queue.update({'description': description_to_queue})
             queue_manager.append(data_to_queue)
 
-            queue_manager.send()
+            method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
+
+            queue_manager.send(method, user)
 
             # Return XML
             return self.response(dumps_networkapi(map))

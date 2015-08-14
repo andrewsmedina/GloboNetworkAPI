@@ -35,6 +35,7 @@ from networkapi.acl.Enum import NETWORK_TYPES
 from networkapi.vlan.models import VlanNotFoundError, VlanACLDuplicatedError
 from networkapi.exception import InvalidValueError
 from networkapi.vlan.serializers import VlanSerializer
+import sys
 
 logger = logging.getLogger('VlanCreateAcl')
 
@@ -116,7 +117,9 @@ class VlanCreateAclResource(RestResource):
             data_to_queue.update({'description': queue_keys.VLAN_CREATE_ACL})
             queue_manager.append(data_to_queue)
 
-            queue_manager.send()
+            method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
+
+            queue_manager.send(method, user)
 
             return self.response(dumps_networkapi({'vlan': model_to_dict(vlan)}))
 

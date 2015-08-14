@@ -37,6 +37,7 @@ from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentVip
 from networkapi.settings import VLAN_CREATE
 from networkapi.vlan.serializers import VlanSerializer
+import sys
 
 
 class VlanResource(RestResource):
@@ -412,7 +413,9 @@ class VlanResource(RestResource):
             data_to_queue.update({'description': queue_keys.VLAN_CRIAR})
             queue_manager.append(data_to_queue)
 
-            queue_manager.send()
+            method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
+
+            queue_manager.send(method, user)
 
             return self.response(dumps_networkapi(map))
         else:

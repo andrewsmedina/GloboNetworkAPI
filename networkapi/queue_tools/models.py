@@ -15,8 +15,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from scheduler import background_scheduler
+from django.db import models
+from networkapi.log import Log
 
-background_scheduler.start()
+class QueueMessage(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id_queue_message')
+    message = models.TextField(null=False, blank=False, db_column='message')
+    queue = models.CharField(null=False, blank=False, max_length=250, db_column='queue')
+    sent = models.BooleanField(null=False, db_column='sent')
+    method = models.CharField(null=False, blank=False, max_length=250, db_column='method')
 
+    log = Log('QueueMessage')
 
+    class Meta():
+        db_table = u'queue_message'
+        managed = True

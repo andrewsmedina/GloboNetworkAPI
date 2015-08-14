@@ -35,6 +35,7 @@ from networkapi.ambiente.models import IP_VERSION
 from networkapi.ip.models import NetworkIPv4, NetworkIPv6
 from networkapi.vlan.models import VlanNotFoundError, AclNotFoundError
 from networkapi.vlan.serializers import VlanSerializer
+import sys
 
 logger = logging.getLogger('VlanCreateScript')
 
@@ -109,7 +110,9 @@ class VlanCreateScriptAclResource(RestResource):
             data_to_queue.update({'description': queue_keys.VLAN_CREATE_SCRIPT_ACL})
             queue_manager.append(data_to_queue)
 
-            queue_manager.send()
+            method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
+
+            queue_manager.send(method, user)
 
             return self.response(dumps_networkapi({'vlan': vlan_formated}))
 

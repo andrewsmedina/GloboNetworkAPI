@@ -16,14 +16,15 @@
 # limitations under the License.
 
 import json
+from networkapi.queue_tools.models import QueueMessage
 import types
 
 import logging
-
-
 from django.conf import settings
 from stompest.config import StompConfig
 from stompest.sync import Stomp
+from stompest.error import StompConnectTimeout, StompConnectionError
+from django.db import transaction
 
 
 LOGGER = logging.getLogger(__name__)
@@ -46,6 +47,10 @@ class QueueManager(object):
         self._broker_uri = getattr(settings, 'QUEUE_BROKER_URI', None) or "tcp://localhost:61613?startupMaxReconnectAttempts=2,maxReconnectAttempts=1"
         self._broker_timeout = getattr(settings, 'QUEUE_BROKER_CONNECT_TIMEOUT', None) or 2
 
+        configuration = StompConfig(uri=self._broker_uri)
+
+        self._client = Stomp(configuration)
+
     def append(self, dict_obj):
         """
             Appended in list object a dictionary that represents
@@ -66,7 +71,7 @@ class QueueManager(object):
             LOGGER.error(u"QueueManagerError - Error on appending objects to queue.")
             LOGGER.error(e)
 
-    def send(self):
+    def send(self, method=None, user=None):
 
         """
             Create a new stomp configuration client, connect and
@@ -74,19 +79,67 @@ class QueueManager(object):
             them to your consumers in TOPIC standard
             and disconnect.
         """
+        serialized_message = {}
+
+        for message in self._queue:
+
+            serialized_message = json.dumps(message, ensure_ascii=False)
+
+            try:
+
+                self._client.connect(connectTimeout=self._broker_timeout)
+
+                self._client.send(self._queue_destination, serialized_message)
+
+                message = QueueMessage(
+                    message=serialized_message,
+                    queue=self._queue_destination,
+                    sent=True,
+                    method=method
+                )
+
+                message.save()
+                transaction.commit()
+
+            except StompConnectTimeout, e:
+
+                message = QueueMessage(
+                    message=serialized_message,
+                    queue=self._queue_destination,
+                    sent=False,
+                    method=method
+                )
+
+                message.save()
+                transaction.commit()
+
+                LOGGER.error(u"StompConnectTimeout - Couldn't connect to broker - maybe it's offline.")
+                LOGGER.debug(e)
+
+        if self._client.session._state == self._client.session.CONNECTED:
+            self._client.disconnect()
+
+    @staticmethod
+    def resend(message, client):
+
+        """
+            Send a message. Used by scheduler.py resend_failed_messages()
+        """
 
         try:
+            client.send(message.queue, message.message)
 
-            configuration = StompConfig(uri=self._broker_uri)
-            client = Stomp(configuration)
-            client.connect(connectTimeout=self._broker_timeout)
+            message.sent = True
+            message.save()
 
-            for message in self._queue:
-                serialized_message = json.dumps(message, ensure_ascii=False)
-                client.send(self._queue_destination, serialized_message)
-
-            client.disconnect()
+        except StompConnectTimeout, e:
+            LOGGER.error(u"StompConnectTimeout - Couldn't connect to broker - maybe it's offline.")
+            LOGGER.debug(e)
 
         except Exception, e:
             LOGGER.error(u"QueueManagerError - Error on sending objects from queue.")
             LOGGER.debug(e)
+
+
+
+

@@ -34,6 +34,7 @@ from networkapi.distributedlock import distributedlock, LOCK_VLAN
 from networkapi.equipamento.models import Equipamento
 from networkapi.error_message_utils import error_messages
 from networkapi.vlan.serializers import VlanSerializer
+import sys
 
 
 class VlanRemoveResource(RestResource):
@@ -165,7 +166,9 @@ class VlanRemoveResource(RestResource):
                     data_to_queue.update({'description': queue_keys.VLAN_REMOVE})
                     queue_manager.append(data_to_queue)
 
-                    queue_manager.send()
+                    method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
+
+                    queue_manager.send(method, user)
 
                     return self.response(dumps_networkapi(map))
                 else:
