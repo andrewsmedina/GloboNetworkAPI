@@ -30,7 +30,7 @@ DATABASES = {
         'HOST': 'localhost',
         'NAME': 'telecom',
         'USER': 'root',
-        'PASSWORD': 'password',
+        'PASSWORD': '',
         'PORT': '3306',
         'OPTIONS': {"init_command": "SET storage_engine=INNODB"}
     }
@@ -213,6 +213,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'networkapi.snippets',
     'networkapi.api_pools',
+    'networkapi.queue_tools',
 )
 
 
@@ -313,7 +314,7 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 #       QUEUE SETTINGS
 ##################################
 QUEUE_DESTINATION = u"/topic/networkapi_queue"
-QUEUE_BROKER_URI = u"failover:(tcp://localhost:61613,tcp://server2:61613,tcp://server3:61613)?randomize=falsa,startupMaxReconnectAttempts=2,maxReconnectAttempts=1e"
+QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://localhost:61616,tcp://server3:61613)?randomize=false,maxReconnectDelay=1,maxReconnectAttempts=0,startupMaxReconnectAttempts=0,useExponentialBackOff=false,initialReconnectDelay=1"
 QUEUE_BROKER_CONNECT_TIMEOUT = 2
 
 ###################################
