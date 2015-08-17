@@ -37,4 +37,5 @@ def resend_failed_messages():
         print e
 
     finally:
-        client.disconnect()
+        if client.session._state == client.session.CONNECTED:
+            client.disconnect()
