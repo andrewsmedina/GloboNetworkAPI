@@ -7,3 +7,4 @@ requests==2.4.3
 netaddr==0.7.14
 stompest==2.1.6
 apscheduler==3.0.3
+python-foreman==0.3.1

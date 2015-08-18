@@ -39,7 +39,7 @@ DATABASES = {
 from networkapi.models.models_signal_receiver import *
 
 # Aplicação rodando em modo Debug
-DEBUG = True
+DEBUG = False
 
 # CONFIGURAÇÃO DO MEMCACHED
 CACHE_BACKEND = 'memcached://localhost:11211/'
@@ -147,7 +147,7 @@ LOG_LEVEL = logging.DEBUG
 LOG_DAYS = 10
 LOG_SHOW_SQL = False
 LOG_USE_STDOUT = False
-LOG_SHOW_TRACEBACK = False
+LOG_SHOW_TRACEBACK = True
 
 VLAN_CACHE_TIME = None
 EQUIPMENT_CACHE_TIME = None
@@ -275,6 +275,7 @@ POOL_REAL_DISABLE = 'gerador_vips -p %s --id_ip %s --port_ip %s --dis'
 POOL_REAL_CHECK = 'gerador_vips -p %s --id_ip %s --port_ip %s --chk'
 POOL_REAL_CHECK_BY_POOL = 'gerador_vips --pool %s --check_status'
 POOL_REAL_CHECK_BY_VIP = 'gerador_vips --vip %s --check_status'
+POOL_SERVICEDOWNACTION = 'gerador_vips --pool %s --servicedownaction'
 
 # Script to Managemant Status Pool Members
 POOL_MANAGEMENT_MEMBERS_STATUS = "gerador_vips --pool %s --apply_status"
@@ -313,6 +314,7 @@ VIP_REALS_v6_CHECK = 'gerador_vips -i %s --id_ipv6 %s --port_ip %s --port_vip %s
 ##################################
 #       QUEUE SETTINGS
 ##################################
+
 QUEUE_DESTINATION = u"/topic/networkapi_queue"
 QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://localhost:61616,tcp://server3:61613)?randomize=false,maxReconnectDelay=1,maxReconnectAttempts=0,startupMaxReconnectAttempts=0,useExponentialBackOff=false,initialReconnectDelay=1"
 QUEUE_BROKER_CONNECT_TIMEOUT = 2
@@ -354,3 +356,9 @@ DIVISAODC_MGMT="NA"
 AMBLOG_MGMT="NA"
 GRPL3_MGMT="REDENOVODC"
 
+### FOREMAN
+USE_FOREMAN=False
+FOREMAN_URL="http://foreman_server"
+FOREMAN_USERNAME="admin"
+FOREMAN_PASSWORD="password"
+FOREMAN_HOSTS_ENVIRONMENT_ID=1

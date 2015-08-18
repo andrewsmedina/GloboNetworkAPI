@@ -115,7 +115,7 @@ class VlanCreateAclResource(RestResource):
             serializer = VlanSerializer(vlan)
             data_to_queue = serializer.data
             data_to_queue.update({'description': queue_keys.VLAN_CREATE_ACL})
-            queue_manager.append(data_to_queue)
+            queue_manager.append({'action': queue_keys.VLAN_CREATE_ACL,'kind': queue_keys.VLAN_KEY,'data': data_to_queue})
 
             method = self.__class__.__name__ + '.' + sys._getframe().f_code.co_name
 

@@ -6,3 +6,5 @@ CREATE TABLE `queue_message` (
     `method` varchar(250) NOT NULL
 )
 ;
+
+alter table equipamentos add column maintenance bool;
