@@ -5,13 +5,14 @@ from django.conf import settings
 from queue_manager import QueueManager
 from models import QueueMessage
 import logging
+from django.db import connection
 
 LOGGER = logging.getLogger(__name__)
 
 background_scheduler = BackgroundScheduler()
 
 
-@background_scheduler.scheduled_job("interval", seconds=10)
+@background_scheduler.scheduled_job("interval", seconds=15)
 def resend_failed_messages():
 
     """
@@ -37,5 +38,7 @@ def resend_failed_messages():
         print e
 
     finally:
+        connection.close()
+
         if client.session._state == client.session.CONNECTED:
             client.disconnect()

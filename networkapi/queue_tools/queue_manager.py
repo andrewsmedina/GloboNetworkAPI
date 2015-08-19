@@ -95,7 +95,7 @@ class QueueManager(object):
 
                 self._client.connect(connectTimeout=self._broker_timeout)
 
-                self._client.send(self._queue_destination, serialized_message)
+                self._client.send(self._queue_destination, serialized_message, headers={'persistent':'true'})
 
                 message = QueueMessage(
                     message=serialized_message,
@@ -135,7 +135,7 @@ class QueueManager(object):
         """
 
         try:
-            client.send(message.queue, message.message)
+            client.send(message.queue, message.message, headers={'persistent':'true'})
 
             message.sent = True
             message.save()
