@@ -187,64 +187,50 @@ Apache ActiveMQ ™ is the most popular and powerful open source messaging and I
 Example configuration on ``settings.py``::
 
 	BROKER_DESTINATION = "/topic/queue_name"
-	BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false"
+	BROKER_URI = "failover:(tcp://localhost:61613,tcp://server2:61613)?randomize=false,maxReconnectDelay=1,maxReconnectAttempts=0,startupMaxReconnectAttempts=0,useExponentialBackOff=false,initialReconnectDelay=1"
+	SCHEDULER_INTERVAL = 15 #time in seconds
 
-Usage::
+The interval (in seconds) between the background task that resends messages that weren't sent before can be set in the ``SCHEDULER_INTERVAL`` constant.
 
-	from queue_tools import queue_keys
-	from queue_tools.queue_manager import QueueManager
+About ``Consumers``::
 
-	# Create new queue manager
-	queue_manager = QueueManager()
+	Consumer must have the following connection headers:
+	{'client-id': ' your-client-id '}
 
-	# Dict is the message body
-	obj_to_queue = {
-    	 "id_vlan": <vlan_id>,
-    	 "num_vlan": <num_vlan>,
-    	 "id_environment": <environment_id>,
-    	 "networks_ipv4": [
-    	  {
-    	   "id": <id>,
-    	   "ip_formated": "<oct1>.<oct2>.<oct3>.<oct4>/<block>"
-    	  }
-    	 ],
-    	 "networks_ipv6": [
-    	  {
-    	   "id": <id>,
-    	   "ip_formated": "<oct1>.<oct2>.<oct3>.<oct4>.<oct5>.<oct6>.<oct7>.<oct8>/<block>"
-    	  }
-    	 ],
-    	 "description": queue_keys.VLAN_REMOVE,
-	}
+	On subscribe, consumers must pass some headers as well:
+	{'ack': 'client-individual', 'persistent': 'true', 'activemq.retroactive': 'true', 'activemq.subscriptionName': 'your-client-id'}
 
-	# Add in memory temporary on queue to sent
-	queue_manager.append(obj_to_queue)
+By using this, the system guarantees that every queue subscriber will receive any dispatched message by all producers, even when they're offline.
+It's important to note that consumers **must be subscribed** to the queue **BEFORE** producers send any messages to it, otherwise they will lose the sent messages before their subscription.
 
-	# sent to consumer
-	queue_manager.send()
 
 Output::
 
-	$VAR1 = {
-    	 'id_vlan' => <id>,
-    	 "num_vlan" => <num_vlan>,
-    	 "id_environment" => <environment_id>,
-    	 "networks_ipv4" => [
-    	  {
-    	   "id" => <id>,
-    	   "ip_formated" => "<oct1>.<oct2>.<oct3>.<oct4>/<block>"
-    	  }
-    	 ],
-    	 "networks_ipv6" => [
-    	  {
-    	   "id" => <id>,
-    	   "ip_formated" => "<oct1>.<oct2>.<oct3>.<oct4>.<oct5>.<oct6>.<oct7>.<oct8>/<block>"
-    	  }
-    	 ],
-    	 'description' => 'remove'
-    	};
+	{
+		"action": "<action>",
+		"kind": "<vlan>",
+		"data":
+		{
+			 "id_vlan":<id>,
+			 "num_vlan":"<num_vlan>",
+			 "id_environment":<environment_id>,
+			 "networks_ipv4" : [
+				  {
+				   "id" : <id>,
+				   "ip_formated" : "<oct1>.<oct2>.<oct3>.<oct4>/<block>"
+				  }
+			 ],
+			 "networks_ipv6" : [
+				  {
+				   "id":<id>,
+				   "ip_formated" : "<oct1>.<oct2>.<oct3>.<oct4>.<oct5>.<oct6>.<oct7>.<oct8>/<block>"
+				  }
+			 ],
+			 "description":"<description>"
+		}
+    }
 
-Features that use the ``QueueManager.py``::
+Features that use the ``QueueManager``::
 
 	Vlan  remove()
 	uri: vlan/<id_vlan>/remove/
