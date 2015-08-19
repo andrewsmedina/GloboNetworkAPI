@@ -319,6 +319,8 @@ QUEUE_DESTINATION = u"/topic/networkapi_queue"
 QUEUE_BROKER_URI = "failover:(tcp://localhost:61613,tcp://localhost:61616,tcp://server3:61613)?randomize=false,maxReconnectDelay=1,maxReconnectAttempts=0,startupMaxReconnectAttempts=0,useExponentialBackOff=false,initialReconnectDelay=1"
 QUEUE_BROKER_CONNECT_TIMEOUT = 2
 
+SCHEDULER_INTERVAL = 15
+
 ###################################
 #    PATH ACLS
 ###################################
