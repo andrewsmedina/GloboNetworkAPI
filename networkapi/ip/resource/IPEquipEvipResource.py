@@ -1,4 +1,4 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -17,7 +17,7 @@
 
 
 from networkapi.admin_permission import AdminPermission
-from networkapi.ambiente.models import EnvironmentVip
+from networkapi.ambiente.models import EnvironmentVip, EnvironmentEnvironmentVip
 from networkapi.auth import has_perm
 from networkapi.equipamento.models import EquipamentoNotFoundError, EquipamentoError, Equipamento
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
@@ -34,12 +34,32 @@ class IPEquipEvipResource(RestResource):
     log = Log('IPEquipEvipResource')
 
     def handle_post(self, request, user, *args, **kwargs):
-        '''Handles POST requests to get all Ips (v4) or (v6) of equip on Divisao DC and Ambiente Logico of fisrt Network4 and 6 (if exists) of Environment Vip.
-
+        """
+        Return the IPs (v4 and/or v6) that can be balanced.
         URL: ip/getbyequipandevip/
-        '''
+
+        @param request: a POST request
+        @param user: the user that makes the request
+        @param args: arguments
+        @param kwargs: keyword arguments
+
+        @return: {"ipv4": list_ipsv4, "ipv6": list_ipsv6}
+
+        @raise IpNotFoundByEquipAndVipError: IP is not related equipment and Environment Vip.
+        @raise InvalidValueError: An error occurred validating a value.
+        @raise NetworkIPv4NotFoundError: Network ipv4 not found.
+        @raise EquipamentoNotFoundError: Equipamento not found.
+        @raise EnvironmentVipNotFoundError: Environment vip not found.
+        @raise UserNotAuthorizedError: User is not authorized.
+        @raise XMLError: Failed to read XML.
+        @raise IpError: Failed to search for the IP.
+        @raise NetworkIPv4Error: An error related to networkipv4.
+        @raise EquipamentoError: Failed to search for the Equipamento.
+        @raise GrupoError: Failed to search for the Grupo.
+        """
 
         self.log.info('Get Ips by Equip - Evip')
+
         try:
 
             # User permission
@@ -56,6 +76,7 @@ class IPEquipEvipResource(RestResource):
                 msg = u'There is no value to the networkapi tag of XML request.'
                 self.log.error(msg)
                 return self.response_error(3, msg)
+
             ip_map = networkapi_map.get('ip_map')
             if ip_map is None:
                 msg = u'There is no value to the ip tag of XML request.'
@@ -82,104 +103,69 @@ class IPEquipEvipResource(RestResource):
 
             # Get Environment VIp
             evip = EnvironmentVip.get_by_pk(id_evip)
+
+            # n-n relationship between environment and environment vip
+            envs = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(evip)
+
             # Get Equipment
             equip = Equipamento.get_by_name(equip_name)
 
-            lista_ips_equip = list()
-            lista_ipsv6_equip = list()
-
-            # GET DIVISAO DC AND AMBIENTE_LOGICO OF NET4 AND NET6
-            lista_amb_div_4 = list()
-            lista_amb_div_6 = list()
-            for net in evip.networkipv4_set.select_related().all():
-
-                dict_div_4 = dict()
-                dict_div_4['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
-                dict_div_4[
-                    'ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
-
-                if dict_div_4 not in lista_amb_div_4:
-                    lista_amb_div_4.append(dict_div_4)
-
-            for net in evip.networkipv6_set.select_related().all():
-
-                dict_div_6 = dict()
-                dict_div_6['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
-                dict_div_6[
-                    'ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
-                if dict_div_6 not in lista_amb_div_6:
-                    lista_amb_div_6.append(dict_div_6)
+            lista_ips_equip = set()
+            lista_ipsv6_equip = set()
 
             # Get all IPV4's Equipment
             for ipequip in equip.ipequipamento_set.select_related().all():
-                if ipequip.ip not in lista_ips_equip:
-                    for dict_div_amb in lista_amb_div_4:
-                        # if ipequip.ip.networkipv4.ambient_vip is not None and
-                        # ipequip.ip.networkipv4.ambient_vip.id  == evip.id:
-                        if (ipequip.ip.networkipv4.vlan.ambiente.divisao_dc.id == dict_div_amb.get('divisao_dc') and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico.id == dict_div_amb.get('ambiente_logico')):
-                            lista_ips_equip.append(ipequip.ip)
+                if ipequip.ip.networkipv4.vlan.ambiente in envs:
+                    lista_ips_equip.add(ipequip.ip)
 
             # Get all IPV6'S Equipment
             for ipequip in equip.ipv6equipament_set.select_related().all():
-                if ipequip.ip not in lista_ipsv6_equip:
-                    for dict_div_amb in lista_amb_div_6:
-                        # if ipequip.ip.networkipv6.ambient_vip is not None and
-                        # ipequip.ip.networkipv6.ambient_vip.id  == evip.id:
-                        print ipequip.ip.networkipv6.vlan.ambiente.divisao_dc.id
-                        print dict_div_amb.get('divisao_dc')
-                        if (ipequip.ip.networkipv6.vlan.ambiente.divisao_dc.id == dict_div_amb.get('divisao_dc') and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico.id == dict_div_amb.get('ambiente_logico')):
-                            lista_ipsv6_equip.append(ipequip.ip)
+                if ipequip.ip.networkipv6.vlan.ambiente in envs:
+                    lista_ipsv6_equip.add(ipequip.ip)
 
-            # lists and dicts for return
-            lista_ip_entregue = list()
-            lista_ip6_entregue = list()
+            # lists and dicts to return
+            ipsv4 = []
+            ipsv6 = []
 
             for ip in lista_ips_equip:
-                dict_ips4 = dict()
-                dict_network = dict()
+                ipv4 = {'id': ip.id,
+                        'ip': "{0}.{1}.{2}.{3}".format(ip.oct1, ip.oct2, ip.oct3, ip.oct4),
+                        'network': {
+                            'network': "{0}.{1}.{2}.{3}".format(ip.networkipv4.oct1, ip.networkipv4.oct2,
+                                                                ip.networkipv4.oct3, ip.networkipv4.oct4),
+                            'mask': "{0}.{1}.{2}.{3}".format(ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2,
+                                                             ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
+                        }
+                }
 
-                dict_ips4['id'] = ip.id
-                dict_ips4['ip'] = "%s.%s.%s.%s" % (
-                    ip.oct1, ip.oct2, ip.oct3, ip.oct4)
+                ipsv4.append(ipv4)
 
-                dict_network['id'] = ip.networkipv4_id
-                dict_network["network"] = "%s.%s.%s.%s" % (
-                    ip.networkipv4.oct1, ip.networkipv4.oct2, ip.networkipv4.oct3, ip.networkipv4.oct4)
-                dict_network["mask"] = "%s.%s.%s.%s" % (
-                    ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2, ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
-
-                dict_ips4['network'] = dict_network
-
-                lista_ip_entregue.append(dict_ips4)
+            ipv6_mask = "{0}:{1}:{2}:{3}:{4}:{5}:{6}:{7}:{8}"
 
             for ip in lista_ipsv6_equip:
-                dict_ips6 = dict()
-                dict_network = dict()
+                ipv6 = {'id': ip.id,
+                        'ip': ipv6_mask.format(ip.block1, ip.block2, ip.block3, ip.block4,
+                                               ip.block5, ip.block6, ip.block7, ip.block8),
+                        'network': {
+                            'network': ipv6_mask.format(ip.networkipv6.block1, ip.networkipv6.block2,
+                                                        ip.networkipv6.block3, ip.networkipv6.block4,
+                                                        ip.networkipv6.block5, ip.networkipv6.block6,
+                                                        ip.networkipv6.block7, ip.networkipv6.block8),
+                            'mask': ipv6_mask.format(ip.networkipv6.block1, ip.networkipv6.block2,
+                                                     ip.networkipv6.block3, ip.networkipv6.block4,
+                                                     ip.networkipv6.block5, ip.networkipv6.block6,
+                                                     ip.networkipv6.block7, ip.networkipv6.block8)
+                        }
+                }
 
-                dict_ips6['id'] = ip.id
-                dict_ips6['ip'] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-                    ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
+                ipsv6.append(ipv6)
 
-                dict_network['id'] = ip.networkipv6.id
-                dict_network["network"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-                    ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
-                dict_network["mask"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-                    ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
-
-                dict_ips6['network'] = dict_network
-
-                lista_ip6_entregue.append(dict_ips6)
-
-            lista_ip_entregue = lista_ip_entregue if len(
-                lista_ip_entregue) > 0 else None
-            lista_ip6_entregue = lista_ip6_entregue if len(
-                lista_ip6_entregue) > 0 else None
-
-            if (lista_ip_entregue is None and lista_ip6_entregue is None):
+            if not ipsv4 and not ipsv6:
                 raise IpNotFoundByEquipAndVipError(
-                    None, 'Ip não encontrado com equipamento %s e ambiente vip %s' % (equip_name, id_evip))
+                    None, 'Ip nao encontrado com equipamento %s e ambiente vip %s' % (equip_name, id_evip))
 
-            return self.response(dumps_networkapi({"ipv4": lista_ip_entregue, "ipv6": lista_ip6_entregue}))
+            resp = dumps_networkapi({"ipv4": ipsv4, "ipv6": ipsv6})
+            return self.response(resp)
 
         except IpNotFoundByEquipAndVipError:
             return self.response_error(317, equip_name, id_evip)

@@ -1110,58 +1110,44 @@ def list_environment_environment_vip_related(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, Read))
 def get_available_ips_to_add_server_pool(request, equip_name, id_ambiente):
-
-    # Start with alls
-     # Get Equipment
-
     lista_ips_equip, lista_ipsv6_equip = _get_available_ips_to_add_server_pool(equip_name, id_ambiente)
-    # lists and dicts for return
 
-    lista_ip_entregue = list()
-    lista_ip6_entregue = list()
+    ipsv4 = []
+    ipsv6 = []
 
     for ip in lista_ips_equip:
-        dict_ips4 = dict()
-        dict_network = dict()
+        ipv4 = {'id': ip.id,
+                'ip': "{0}.{1}.{2}.{3}".format(ip.oct1, ip.oct2, ip.oct3, ip.oct4),
+                'network': {
+                    'network': "{0}.{1}.{2}.{3}".format(ip.networkipv4.oct1, ip.networkipv4.oct2,
+                                                        ip.networkipv4.oct3, ip.networkipv4.oct4),
+                    'mask': "{0}.{1}.{2}.{3}".format(ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2,
+                                                     ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
+                }
+        }
 
-        dict_ips4['id'] = ip.id
-        dict_ips4['ip'] = "%s.%s.%s.%s" % (
-            ip.oct1, ip.oct2, ip.oct3, ip.oct4)
+        ipsv4.append(ipv4)
 
-        dict_network['id'] = ip.networkipv4_id
-        dict_network["network"] = "%s.%s.%s.%s" % (
-            ip.networkipv4.oct1, ip.networkipv4.oct2, ip.networkipv4.oct3, ip.networkipv4.oct4)
-        dict_network["mask"] = "%s.%s.%s.%s" % (
-            ip.networkipv4.mask_oct1, ip.networkipv4.mask_oct2, ip.networkipv4.mask_oct3, ip.networkipv4.mask_oct4)
-
-        dict_ips4['network'] = dict_network
-
-        lista_ip_entregue.append(dict_ips4)
-
+    ipv6_mask = "{0}:{1}:{2}:{3}:{4}:{5}:{6}:{7}:{8}"
     for ip in lista_ipsv6_equip:
-        dict_ips6 = dict()
-        dict_network = dict()
+        ipv6 = {'id': ip.id,
+                'ip': ipv6_mask.format(ip.block1, ip.block2, ip.block3, ip.block4,
+                                       ip.block5, ip.block6, ip.block7, ip.block8),
+                'network': {
+                    'network': ipv6_mask.format(ip.networkipv6.block1, ip.networkipv6.block2,
+                                                ip.networkipv6.block3, ip.networkipv6.block4,
+                                                ip.networkipv6.block5, ip.networkipv6.block6,
+                                                ip.networkipv6.block7, ip.networkipv6.block8),
+                    'mask': ipv6_mask.format(ip.networkipv6.block1, ip.networkipv6.block2,
+                                             ip.networkipv6.block3, ip.networkipv6.block4,
+                                             ip.networkipv6.block5, ip.networkipv6.block6,
+                                             ip.networkipv6.block7, ip.networkipv6.block8)
+                }
+        }
 
-        dict_ips6['id'] = ip.id
-        dict_ips6['ip'] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-            ip.block1, ip.block2, ip.block3, ip.block4, ip.block5, ip.block6, ip.block7, ip.block8)
+        ipsv6.append(ipv6)
 
-        dict_network['id'] = ip.networkipv6.id
-        dict_network["network"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-            ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
-        dict_network["mask"] = "%s:%s:%s:%s:%s:%s:%s:%s" % (
-            ip.networkipv6.block1, ip.networkipv6.block2, ip.networkipv6.block3, ip.networkipv6.block4, ip.networkipv6.block5, ip.networkipv6.block6, ip.networkipv6.block7, ip.networkipv6.block8)
-
-        dict_ips6['network'] = dict_network
-
-        lista_ip6_entregue.append(dict_ips6)
-
-    lista_ip_entregue = lista_ip_entregue if len(
-        lista_ip_entregue) > 0 else None
-    lista_ip6_entregue = lista_ip6_entregue if len(
-        lista_ip6_entregue) > 0 else None
-
-    return Response({'list_ipv4': lista_ip_entregue, 'list_ipv6': lista_ip6_entregue})
+    return Response({"ipsv4": ipsv4, "ipsv6": ipsv6})
 
 
 def _get_available_ips_to_add_server_pool(equip_name, id_ambiente):
@@ -1175,18 +1161,16 @@ def _get_available_ips_to_add_server_pool(equip_name, id_ambiente):
     environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip_list(environment_vip_list)
 
     # # Get all IPV4's Equipment
-    for environment in environment_list_related:
-        for ipequip in equip.ipequipamento_set.select_related().all():
-            network_ipv4 = ipequip.ip.networkipv4
-            if network_ipv4.vlan.ambiente == environment:
-                lista_ips_equip.add(ipequip.ip)
+    for ipequip in equip.ipequipamento_set.select_related().all():
+        network_ipv4 = ipequip.ip.networkipv4
+        if network_ipv4.vlan.ambiente in environment_list_related:
+            lista_ips_equip.add(ipequip.ip)
 
     # # Get all IPV6's Equipment
-    for environment in environment_list_related:
-        for ipequip in equip.ipv6equipament_set.select_related().all():
-            network_ipv6 = ipequip.ip.networkipv6
-            if network_ipv6.vlan.ambiente == environment:
-                lista_ipsv6_equip.add(ipequip.ip)
+    for ipequip in equip.ipv6equipament_set.select_related().all():
+        network_ipv6 = ipequip.ip.networkipv6
+        if network_ipv6.vlan.ambiente in environment_list_related:
+            lista_ipsv6_equip.add(ipequip.ip)
 
     return lista_ips_equip, lista_ipsv6_equip
 

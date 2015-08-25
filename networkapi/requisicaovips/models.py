@@ -20,7 +20,7 @@ from django.db import models
 from django.db.models import Q
 from networkapi.healthcheckexpect.models import HealthcheckExpect
 from networkapi.ip.models import Ip, Ipv6, IpNotFoundByEquipAndVipError
-from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente
+from networkapi.ambiente.models import EnvironmentVip, IP_VERSION, Ambiente, EnvironmentEnvironmentVip
 from django.core.exceptions import ObjectDoesNotExist
 from _mysql_exceptions import OperationalError
 from networkapi.log import Log
@@ -1415,7 +1415,7 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def valid_real_server(cls, ip, equip, evip, valid=True):
-        '''Validation real server
+        """Validation real server
 
         @param ip:     IPv4 or Ipv6. 'xxx.xxx.xxx.xxx or xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx'
         @param equip:  Equipment
@@ -1426,70 +1426,46 @@ class RequisicaoVips(BaseModel):
         @raise IpNotFoundByEquipAndVipError:  IP is not related equipment and Environment Vip.
         @raise IpNotFoundError: IP is not registered.
         @raise IpError: Failed to search for the IP.
-        '''
+        """
+
+        # n-n relationship between environment and environment vip
+        envs = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(evip)
+
         if is_valid_ipv4(ip):
 
             ip_list = ip.split(".")
+            ip = Ip.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[2], ip_list[3], evip.id, valid)
 
-            ip = Ip.get_by_octs_and_environment_vip(
-                ip_list[0], ip_list[1], ip_list[2], ip_list[3], evip.id, valid)
-
-            lista_ips_equip = list()
-            lista_amb_div_4 = list()
-
-            # GET DIVISAO DC AND AMBIENTE_LOGICO OF NET4
-            for net in evip.networkipv4_set.select_related().all():
-
-                dict_div_4 = dict()
-                dict_div_4['divisao_dc'] = net.vlan.ambiente.divisao_dc_id
-                dict_div_4['ambiente_logico'] = net.vlan.ambiente.ambiente_logico_id
-
-                if dict_div_4 not in lista_amb_div_4:
-                    lista_amb_div_4.append(dict_div_4)
+            lista_ips_equip = set()
 
             # Get all IPV4's Equipment
             for ipequip in equip.ipequipamento_set.select_related().all():
-                if ipequip.ip not in lista_ips_equip:
-                    for dict_div_amb in lista_amb_div_4:
-                        if ipequip.ip.networkipv4.ambient_vip is not None and ipequip.ip.networkipv4.ambient_vip.id == evip.id:
-                            if (ipequip.ip.networkipv4.vlan.ambiente.divisao_dc_id == dict_div_amb.get('divisao_dc') and ipequip.ip.networkipv4.vlan.ambiente.ambiente_logico_id == dict_div_amb.get('ambiente_logico')):
-                                lista_ips_equip.append(ipequip.ip)
+                if ipequip.ip.networkipv4.vlan.ambiente in envs:
+                    lista_ips_equip.add(ipequip.ip)
 
-            if valid == True:
-                if not ip in lista_ips_equip:
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com equipamento %s e Ambiente Vip: %s' % (
+            if valid:
+                if ip not in lista_ips_equip:
+                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                                                             'equipamento %s e Ambiente Vip: %s' % (
                         equip.name, evip.show_environment_vip()))
 
         elif is_valid_ipv6(ip):
 
             ip_list = ip.split(":")
             ip = Ipv6.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[
-                                                      2], ip_list[3], ip_list[4], ip_list[5], ip_list[6], ip_list[7], evip.id, valid)
+                                                      2], ip_list[3], ip_list[4], ip_list[5],
+                                                      ip_list[6], ip_list[7], evip.id, valid)
 
-            lista_amb_div_6 = list()
-            lista_ipsv6_equip = list()
+            lista_ipsv6_equip = set()
 
-            # GET DIVISAO DC AND AMBIENTE_LOGICO OF NET6
-            for net in evip.networkipv6_set.select_related().all():
-
-                dict_div_6 = dict()
-                dict_div_6['divisao_dc'] = net.vlan.ambiente.divisao_dc
-                dict_div_6[
-                    'ambiente_logico'] = net.vlan.ambiente.ambiente_logico
-                if dict_div_6 not in lista_amb_div_6:
-                    lista_amb_div_6.append(dict_div_6)
-
-            # Get all IPV6'S Equipment
             for ipequip in equip.ipv6equipament_set.select_related().all():
-                if ipequip.ip not in lista_ipsv6_equip:
-                    for dict_div_amb in lista_amb_div_6:
-                        if ipequip.ip.networkipv6.ambient_vip is not None and ipequip.ip.networkipv6.ambient_vip.id == evip.id:
-                            if (ipequip.ip.networkipv6.vlan.ambiente.divisao_dc == dict_div_amb.get('divisao_dc') and ipequip.ip.networkipv6.vlan.ambiente.ambiente_logico == dict_div_amb.get('ambiente_logico')):
-                                lista_ipsv6_equip.append(ipequip.ip)
+                if ipequip.ip.networkipv6.vlan.ambiente in envs:
+                    lista_ipsv6_equip.add(ipequip.ip)
 
-            if valid == True:
-                if not ip in lista_ipsv6_equip:
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv6 não está relacionado com equipamento %s e Ambiente Vip: %s' % (
+            if valid:
+                if ip not in lista_ipsv6_equip:
+                    raise IpNotFoundByEquipAndVipError(None, 'Ipv6 não está relacionado com '
+                                                             'equipamento %s e Ambiente Vip: %s' % (
                         equip.name, evip.show_environment_vip()))
 
         else:
