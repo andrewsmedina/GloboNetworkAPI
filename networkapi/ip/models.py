@@ -1011,9 +1011,9 @@ class Ip(BaseModel):
                         if ip.networkipv4.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        ip_ambiente_id = ip.networkipv4.vlan.ambiente.id
+                        ip_env_id = ip.networkipv4.vlan.ambiente.id
 
-                        if EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, id_evip):
+                        if EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, id_evip):
                             return ip
 
                 raise ObjectDoesNotExist()
@@ -2143,22 +2143,24 @@ class Ipv6(BaseModel):
         """
         try:
             ips = Ipv6.objects.filter(block1=block1, block2=block2, block3=block3,
-                                    block4=block4, block5=block5, block6=block6, block7=block7, block8=block8)
+                                      block4=block4, block5=block5, block6=block6,
+                                      block7=block7, block8=block8)
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
             if valid is True:
                 return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
-                                    block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
+                                        block6=block6, block7=block7, block8=block8,
+                                        networkipv6__ambient_vip__id=id_evip)
             else:
                 for ip in ips:
                     if ip.networkipv6.ambient_vip:
                         if ip.networkipv6.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        ip_ambiente_id = ip.networkipv6.vlan.ambiente.id
+                        ip_env_id = ip.networkipv6.vlan.ambiente.id
 
-                        if EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, id_evip):
+                        if EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, id_evip):
                             return ip
 
                 raise ObjectDoesNotExist()

@@ -1194,7 +1194,7 @@ class EnvironmentEnvironmentVip(BaseModel):
         return environment_list
 
     @classmethod
-    def envrionmnet_is_related_to_environment_vip(cls, environment_id, environment_vip_id):
+    def environmnet_is_related_to_environment_vip(cls, environment_id, environment_vip_id):
         """
         Check if environment is in environment_vip's list of environments
         :param environment_id: environment to check

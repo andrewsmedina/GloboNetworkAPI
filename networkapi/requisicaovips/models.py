@@ -1434,14 +1434,14 @@ class RequisicaoVips(BaseModel):
             ip = Ip.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[2], ip_list[3], evip.id, valid)
 
             if valid is True:
-                ip_ambiente_id = ip.networkipv4.vlan.ambiente.id
+                ip_env_id = ip.networkipv4.vlan.ambiente.id
 
-                if not EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, evip.id):
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                if not EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, evip.id):
+                    raise IpNotFoundByEquipAndVipError(None, u'Ipv4 não está relacionado com '
                                                              'Ambiente Vip: %s' % evip.name)
 
                 if equip.ipequipamento_set.filter(ip=ip).count() == 0:
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                    raise IpNotFoundByEquipAndVipError(None, u'Ipv4 não está relacionado com '
                                                              'equipamento %s' % equip.name)
 
         elif is_valid_ipv6(ip):
@@ -1451,14 +1451,14 @@ class RequisicaoVips(BaseModel):
                                                       2], ip_list[3], ip_list[4], ip_list[5],
                                                       ip_list[6], ip_list[7], evip.id)
             if valid is True:
-                ip_ambiente_id = ip.networkipv6.vlan.ambiente.id
+                ip_env_id = ip.networkipv6.vlan.ambiente.id
 
-                if not EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, evip.id):
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                if not EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, evip.id):
+                    raise IpNotFoundByEquipAndVipError(None, u'Ipv4 não está relacionado com '
                                                              'Ambiente Vip: %s' % evip.name)
 
                 if equip.ipequipamento_set.filter(ip=ip).count() == 0:
-                    raise IpNotFoundByEquipAndVipError(None, 'Ipv6 não está relacionado com '
+                    raise IpNotFoundByEquipAndVipError(None, u'Ipv6 não está relacionado com '
                                                              'equipamento %s e Ambiente Vip: %s' %
                                                        (equip.name, evip.show_environment_vip()))
 
