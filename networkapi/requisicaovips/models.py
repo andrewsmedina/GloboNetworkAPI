@@ -353,14 +353,14 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def remove(cls, authenticated_user, vip_id):
-        '''Pesquisa e remove uma Requisicao VIP.
+        """Pesquisa e remove uma Requisicao VIP.
 
         @return: Nothing
 
         @raise RequisicaoVipsNotFoundError: Requisao VIP não cadastrado.
 
         @raise RequisicaoVipsError: Falha ao remover Requisao VIP.
-        '''
+        """
         try:
             vip = RequisicaoVips.get_by_pk(vip_id)
 
@@ -437,11 +437,11 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def is_valid_values_reals_priority(cls, reals_priority_map):
-        '''Validation when the values ​​of reals_priority.N are all equal, the values ​​should be automatically changed to 0 (zero).
+        """Validation when the values ​​of reals_priority.N are all equal, the values ​​should be automatically changed to 0 (zero).
 
         @param reals_priority_map: List of reals_priority.
         @return: reals_priority_map: List of reals_priority.
-        '''
+        """
         firstValue = reals_priority_map[0]
         valid_number_map = []
         for reals_priority in reals_priority_map:
@@ -660,7 +660,7 @@ class RequisicaoVips(BaseModel):
             self.variaveis = self.variaveis[0:len(self.variaveis) - 1]
 
     def set_variables(self, variables_map):
-        '''Constroe e atribui o valor do campo "variaveis" a partir dos dados no mapa.
+        """Constroe e atribui o valor do campo "variaveis" a partir dos dados no mapa.
 
         @raise EnvironmentVipNotFoundError: Ambiente Vip não encontrado com os valores de finalidade, cliente e ambiente fornecidos.
 
@@ -685,7 +685,7 @@ class RequisicaoVips(BaseModel):
         @raise InvalidRealValueError: Valor inválido de um real.
 
         @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
-        '''
+        """
 
         log = Log('insert_vip_request_set_variables')
 
@@ -930,7 +930,7 @@ class RequisicaoVips(BaseModel):
 
     @classmethod
     def update(cls, authenticated_user, pk, variables_map, **kwargs):
-        '''Atualiza os dados de uma requisição de VIP.
+        """Atualiza os dados de uma requisição de VIP.
 
         Após atualizar os dados o campo "validado" receberá o valor 0(zero).
 
@@ -954,7 +954,7 @@ class RequisicaoVips(BaseModel):
         @raise IpNotFoundError: IP nao cadastrado.
 
         @raise InvalidHealthcheckTypeValueError: Healthcheck_Type com valor inválido ou inconsistente em relação ao valor do healthcheck_expect.
-        '''
+        """
         vip = RequisicaoVips.get_by_pk(pk)
 
         with distributedlock(LOCK_VIP % pk):
@@ -1066,12 +1066,12 @@ class RequisicaoVips(BaseModel):
                 e, u'Falha ao atualizar a requisição de vip.')
 
     def valida(self, authenticated_user, validado):
-        '''Valida uma Requisicao VIP.
+        """Valida uma Requisicao VIP.
 
         @return: Nothing.
 
         @raise RequisicaoVipsError: Erro ao validar Requisição de VIP.
-        '''
+        """
         try:
             self.validado = validado
 
@@ -1082,7 +1082,7 @@ class RequisicaoVips(BaseModel):
                 e, u'Falha ao validar a requisição de vip.')
 
     def create(self, authenticated_user, variables_map):
-        ''' Insere uma nova requisição de VIP.
+        """ Insere uma nova requisição de VIP.
 
         Os campos validado e vip_criado terão sempre o valor 0.
 
@@ -1125,7 +1125,7 @@ class RequisicaoVips(BaseModel):
         @raise InvalidHealthcheckValueError: Valor do healthcheck inconsistente em relação ao valor do healthcheck_type.
 
         @raise RequisicaoVipsError: Falha ao inserir a requisição de VIP.
-        '''
+        """
         self.ip = Ip().get_by_pk(self.ip.id)
 
         # Valid list reals_prioritys
@@ -1167,7 +1167,7 @@ class RequisicaoVips(BaseModel):
                 e, u'Falha ao inserir a requisição de vip.')
 
     def valid_values_ports(self, vip_map):
-        '''Validation when the values ​​of portas_servicos
+        """Validation when the values ​​of portas_servicos
         This method accept 'port1:port2' and 'port1' only, when the parameter is port1, the method will understand that it means 'por1:por1'
 
         @param vip_map: Map with the data of the request..
@@ -1176,7 +1176,7 @@ class RequisicaoVips(BaseModel):
                  In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Valid portas_servicos
         portas_servicos_map = vip_map.get('portas_servicos')
@@ -1212,7 +1212,7 @@ class RequisicaoVips(BaseModel):
         return vip_map, None
 
     def valid_values_reals_priority(self, vip_map):
-        '''Validation when the values ​​of reals_priority.N
+        """Validation when the values ​​of reals_priority.N
 
         @param vip_map: Map with the data of the request..
 
@@ -1220,7 +1220,7 @@ class RequisicaoVips(BaseModel):
                  In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Valid reals_prioritys
         reals_prioritys_map = vip_map.get('reals_prioritys')
@@ -1258,7 +1258,7 @@ class RequisicaoVips(BaseModel):
         return vip_map, None
 
     def valid_values_reals_weight(self, vip_map):
-        '''Validation when the values ​​of reals_weight.N
+        """Validation when the values ​​of reals_weight.N
 
         @param vip_map: Map with the data of the request.
 
@@ -1266,7 +1266,7 @@ class RequisicaoVips(BaseModel):
                  In case of error: vip_map, code  (code error message).
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Valid reals_weight
         reals_weights_map = vip_map.get('reals_weights')
@@ -1313,7 +1313,7 @@ class RequisicaoVips(BaseModel):
         return vip_map, None
 
     def valid_values_healthcheck(self, vip_map, vip, evironment_vip):
-        '''Validation when the values ​​of healthcheck
+        """Validation when the values ​​of healthcheck
 
         @param vip_map: Map with the data of the request.
 
@@ -1326,7 +1326,7 @@ class RequisicaoVips(BaseModel):
         @raise ObjectDoesNotExist: Healthcheck does not exist .
         @raise HealthcheckExpectNotFoundError: The id_healthcheck_expect parameter does not exist.
 
-        '''
+        """
 
         # Get XML data
         healthcheck_type = upper(str(vip_map['healthcheck_type']))
@@ -1341,7 +1341,7 @@ class RequisicaoVips(BaseModel):
             return vip_map, vip, 275
 
         if healthcheck_type != 'HTTP':
-            if not (id_healthcheck_expect == None and healthcheck == None):
+            if not (id_healthcheck_expect is None and healthcheck is None):
                 self.log.error(
                     u'The healthcheck_type parameter is %s, then healthcheck and id_healthcheck_expect must be None.', healthcheck_type)
                 return vip_map, vip, 276
@@ -1350,13 +1350,13 @@ class RequisicaoVips(BaseModel):
                 # Set id_healthcheck_expect to None
                 vip.healthcheck_expect = None
 
-
         # If healthcheck_type is 'HTTP' id_healthcheck_expect and healthcheck
         # must NOT be None
         elif healthcheck_type == 'HTTP':
-            if id_healthcheck_expect == None or healthcheck == None:
+            if id_healthcheck_expect is None or healthcheck is None:
                 self.log.error(
-                    u'The healthcheck_type parameter is HTTP, then healthcheck and id_healthcheck_expect must NOT be None.')
+                    u'The healthcheck_type parameter is HTTP, then healthcheck '
+                    u'and id_healthcheck_expect must NOT be None.')
                 return vip_map, vip, 277
             else:
                 try:
@@ -1428,45 +1428,39 @@ class RequisicaoVips(BaseModel):
         @raise IpError: Failed to search for the IP.
         """
 
-        # n-n relationship between environment and environment vip
-        envs = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(evip)
-
         if is_valid_ipv4(ip):
 
             ip_list = ip.split(".")
             ip = Ip.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[2], ip_list[3], evip.id, valid)
 
-            lista_ips_equip = set()
+            if valid is True:
+                ip_ambiente_id = ip.networkipv4.vlan.ambiente.id
 
-            # Get all IPV4's Equipment
-            for ipequip in equip.ipequipamento_set.select_related().all():
-                if ipequip.ip.networkipv4.vlan.ambiente in envs:
-                    lista_ips_equip.add(ipequip.ip)
-
-            if valid:
-                if ip not in lista_ips_equip:
+                if not EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, evip.id):
                     raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
-                                                             'equipamento %s e Ambiente Vip: %s' % (
-                        equip.name, evip.show_environment_vip()))
+                                                             'Ambiente Vip: %s' % evip.name)
+
+                if equip.ipequipamento_set.filter(ip=ip).count() == 0:
+                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                                                             'equipamento %s' % equip.name)
 
         elif is_valid_ipv6(ip):
 
             ip_list = ip.split(":")
             ip = Ipv6.get_by_octs_and_environment_vip(ip_list[0], ip_list[1], ip_list[
                                                       2], ip_list[3], ip_list[4], ip_list[5],
-                                                      ip_list[6], ip_list[7], evip.id, valid)
+                                                      ip_list[6], ip_list[7], evip.id)
+            if valid is True:
+                ip_ambiente_id = ip.networkipv6.vlan.ambiente.id
 
-            lista_ipsv6_equip = set()
+                if not EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, evip.id):
+                    raise IpNotFoundByEquipAndVipError(None, 'Ipv4 não está relacionado com '
+                                                             'Ambiente Vip: %s' % evip.name)
 
-            for ipequip in equip.ipv6equipament_set.select_related().all():
-                if ipequip.ip.networkipv6.vlan.ambiente in envs:
-                    lista_ipsv6_equip.add(ipequip.ip)
-
-            if valid:
-                if ip not in lista_ipsv6_equip:
+                if equip.ipequipamento_set.filter(ip=ip).count() == 0:
                     raise IpNotFoundByEquipAndVipError(None, 'Ipv6 não está relacionado com '
-                                                             'equipamento %s e Ambiente Vip: %s' % (
-                        equip.name, evip.show_environment_vip()))
+                                                             'equipamento %s e Ambiente Vip: %s' %
+                                                       (equip.name, evip.show_environment_vip()))
 
         else:
             raise InvalidValueError(None, 'ip', ip)
@@ -1479,18 +1473,20 @@ class RequisicaoVips(BaseModel):
         ports_vip = ports_vip_map.get('porta')
         reals = list()
 
-        #Check if one of the req pools is marked as created. Raises an error if so.
+        # check if one of the req pools is marked as created. Raises an error if so.
         vip_ports_pks = []
         for port_vip in ports_vip:
             vip_ports_pks.append(port_vip.split(':')[0])
 
-        server_pools_antes = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip__in=vip_ports_pks)
+        server_pools_antes = ServerPool.objects.filter(vipporttopool__requisicao_vip=self,
+                                                       vipporttopool__port_vip__in=vip_ports_pks)
 
         for server_pool in server_pools_antes:
             if server_pool.pool_created:
                 raise RequestVipServerPoolConstraintError(
                     None,
-                    'ServerPool %s ja esta indicado como criado no equipamento nao pode ser alterado.' % server_pool.identifier)
+                    'ServerPool %s ja esta indicado como criado '
+                    'no equipamento nao pode ser alterado.' % server_pool.identifier)
 
         vip_port_list = list()
         pool_member_pks_removed = list()
@@ -1526,14 +1522,14 @@ class RequisicaoVips(BaseModel):
                 healthcheck_expect = HealthcheckExpect.get_by_pk(
                                 id_healthcheck_expect).match_list
 
-            if healthcheck_request == None:
+            if healthcheck_request is None:
                 healthcheck_request = ''
             healthcheck_request = healthcheck_request.replace(chr(10), '\\n').replace(chr(13), '\\r')
-            if healthcheck_expect == None:
+            if healthcheck_expect is None:
                 healthcheck_expect = ''
             healthcheck_expect  = healthcheck_expect.replace(chr(10), '\\n').replace(chr(13), '\\r')
 
-            #look for a HT with the given values
+            # look for a HT with the given values
             healthcheck_query = Healthcheck.objects.filter(
                 healthcheck_type=healthcheck_type_upper,
                 healthcheck_request=healthcheck_request,
@@ -1544,8 +1540,8 @@ class RequisicaoVips(BaseModel):
             healthcheck_obj = healthcheck_query.uniqueResult()
 
         except ObjectDoesNotExist, e:
-            #O codigo acima procura um HT ja existente, mas nao acha.
-            #Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
+            # O codigo acima procura um HT ja existente, mas nao acha.
+            # Neste caso, é preciso criar um novo HT na tabela e usar este novo id.
             self.log.debug("Criando um novo Healthcheck, pois o desejado ainda não existe")
             healthcheck_obj = Healthcheck()
             healthcheck_obj.healthcheck_type=healthcheck_type_upper
@@ -1554,7 +1550,7 @@ class RequisicaoVips(BaseModel):
             healthcheck_obj.destination='*:*'
 
             healthcheck_obj.save(user)
-    
+
         # Reals
         reals_map = vip_map.get('reals')
         if reals_map:
@@ -1568,9 +1564,8 @@ class RequisicaoVips(BaseModel):
             reals_weights = vip_map.get('reals_weights')
             weights = None
 
-            if reals_weights != None:
+            if reals_weights is not None:
                 weights = reals_weights.get('reals_weight')
-
 
         # save ServerPool and VipPortToPool
         for port_vip in ports_vip:
@@ -1579,14 +1574,15 @@ class RequisicaoVips(BaseModel):
             default_port = port_to_vip[1]
             vip_port = port_to_vip[0]
             ip_vip = self.ip or self.ipv6
-            
-            #Procura se já existe o pool
-            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self, vipporttopool__port_vip=vip_port)
-            
+
+            # Procura se já existe o pool
+            server_pools = ServerPool.objects.filter(vipporttopool__requisicao_vip=self,
+                                                     vipporttopool__port_vip=vip_port)
+
             if server_pools.count() == 0:
                 server_pool = ServerPool()
 
-                #Try to get a unique identifier for server pool
+                # Try to get a unique identifier for server pool
                 server_pool.identifier = 'VIP' + str(self.id) + '_pool_' + vip_port
                 if ServerPool.objects.filter(identifier = server_pool.identifier):
                     name_not_found = 1
@@ -1616,13 +1612,13 @@ class RequisicaoVips(BaseModel):
 
             server_pool.default_port = default_port
             server_pool.default_limit = vip_map.get('maxcon')
-            
+
             if healthcheck_obj != None:
                 server_pool.healthcheck = healthcheck_obj
             server_pool.lb_method = lb_method
 
             server_pool.save(user)
-            
+
             vip_port_to_pool.server_pool = server_pool
             vip_port_to_pool.save(user)
 
@@ -1632,21 +1628,17 @@ class RequisicaoVips(BaseModel):
         vip_ports_pks = []
         for v_port in vip_port_list:
             vip_ports_pks.append(v_port['port_vip'])
-        
+
         server_pools_to_remove = ServerPool.objects.filter(vipporttopool__requisicao_vip=self).exclude(vipporttopool__port_vip__in=vip_ports_pks)
         for sp in server_pools_to_remove:
             self.log.debug("Removendo pool da porta %s"%sp.default_port)
-            vip_port_to_pool = VipPortToPool.objects.filter(
-                    server_pool=sp,
-                    requisicao_vip=self
-                ).uniqueResult()
+            vip_port_to_pool = VipPortToPool.objects.filter(server_pool=sp, requisicao_vip=self).uniqueResult()
 
             vip_port_to_pool.delete(user)
-            
-            #Removing unused ServerPool
-            #Safe to remove because server pools are not created (tested earlier)
-            vip_port_to_pool = VipPortToPool.objects.filter(
-                    server_pool=sp)
+
+            # Removing unused ServerPool
+            # Safe to remove because server pools are not created (tested earlier)
+            vip_port_to_pool = VipPortToPool.objects.filter(server_pool=sp)
             if not vip_port_to_pool:
                 self.log.info("Removing unused ServerPool %s %s" % (sp.id, sp.identifier) )
                 sp.delete(user)
@@ -1654,12 +1646,12 @@ class RequisicaoVips(BaseModel):
         # save ServerPoolMember
         server_pool_member_pks = []
         for i in range(0, len(reals)):
-            
+
             weight = ''
             port_real = reals[i].get('port_real')
             port_vip = reals[i].get('port_vip')
             ip_id = reals[i].get('id_ip')
-            
+
             # Valid port real
             if not is_valid_int_greater_zero_param(port_real):
                 self.log.error(
@@ -1690,9 +1682,10 @@ class RequisicaoVips(BaseModel):
                 if i < len(weights):
                     weight = weights[i]
 
-            #procura se já existe o member
-            if server_pool.id != None:
-                server_pool_members = ServerPoolMember.objects.filter(ip=ip_id, port_real=port_real, server_pool=server_pool.id)
+            # procura se já existe o member
+            if server_pool.id is not None:
+                server_pool_members = ServerPoolMember.objects.filter(ip=ip_id, port_real=port_real,
+                                                                      server_pool=server_pool.id)
 
             if server_pool_members.count() == 0:
                 server_pool_member = ServerPoolMember()
@@ -1711,10 +1704,10 @@ class RequisicaoVips(BaseModel):
             server_pool_member.limit = 0 or vip_map.get('maxcon')
 
             server_pool_member.save(user)
-            
+
             server_pool_member_pks.append(server_pool_member.id)
-            
-        #delete members
+
+        # delete members
         server_pool_members_to_delete = ServerPoolMember.objects.filter(server_pool__in=server_pools_antes).exclude(id__in=server_pool_member_pks)
         for spm in server_pool_members_to_delete:
             self.log.debug("Removendo server_pool_member %s"%spm.ip)
@@ -1771,7 +1764,7 @@ class RequisicaoVips(BaseModel):
         server_pool_list = list()
 
         for vip_port in vip_ports:
-            #Only deletes pool if it is not in use in any other vip request
+            # Only deletes pool if it is not in use in any other vip request
             server_pools_still_used = VipPortToPool.objects.filter(server_pool=vip_port.server_pool).exclude(requisicao_vip=self)
 
             if not server_pools_still_used:
@@ -1800,12 +1793,12 @@ class OptionVip(BaseModel):
         managed = True
 
     def valid_option_vip(self, optionvip_map):
-        '''Validate the values ​​of option vip
+        """Validate the values ​​of option vip
 
         @param optionvip_map: Map with the data of the request.
 
         @raise InvalidValueError: Represents an error occurred validating a value.
-        '''
+        """
 
         # Get XML data
         tipo_opcao = optionvip_map.get('tipo_opcao')
@@ -1971,10 +1964,10 @@ class OptionVip(BaseModel):
             raise OptionVipError(e, u'Failure to list all Option Vip.')
 
     def delete(self, authenticated_user):
-        '''Override Django's method to remove option vip
+        """Override Django's method to remove option vip
 
         Before removing the option vip removes all relationships with environment vip.
-        '''
+        """
 
         # Remove all EnvironmentVIP OptionVip related
         for option_environment in OptionVipEnvironmentVip.objects.filter(option=self.id):

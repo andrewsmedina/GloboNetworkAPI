@@ -23,7 +23,8 @@ from networkapi.equipamento.models import Equipamento, EquipamentoAmbiente, Equi
 from networkapi.log import Log
 from networkapi.models.BaseModel import BaseModel
 from networkapi.vlan.models import Vlan, TipoRede
-from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironment, IP_VERSION, ConfigEnvironmentInvalidError, Ambiente
+from networkapi.ambiente.models import EnvironmentVip, ConfigEnvironment, IP_VERSION, ConfigEnvironmentInvalidError, \
+    Ambiente, EnvironmentEnvironmentVip
 from _mysql_exceptions import OperationalError
 from networkapi.infrastructure.ipaddr import IPv4Network, IPv6Network, AddressValueError, IPv4Address, IPv6Address
 from networkapi.config.models import Configuration
@@ -1001,7 +1002,7 @@ class Ip(BaseModel):
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
-            if valid == True:
+            if valid is True:
                     return Ip.objects.get(oct1=oct1, oct2=oct2, oct3=oct3, oct4=oct4,
                                           networkipv4__ambient_vip__id=id_evip)
             else:
@@ -1010,11 +1011,11 @@ class Ip(BaseModel):
                         if ip.networkipv4.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(vlan__networkipv4__ambient_vip__id=id_evip)
-                        for env in environments:
-                            if ip.networkipv4.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
-                                    and ip.networkipv4.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
-                                return ip
+                        ip_ambiente_id = ip.networkipv4.vlan.ambiente.id
+
+                        if EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, id_evip):
+                            return ip
+
                 raise ObjectDoesNotExist()
         except ObjectDoesNotExist, e:
             evip = EnvironmentVip.get_by_pk(id_evip)
@@ -2146,7 +2147,7 @@ class Ipv6(BaseModel):
             if ips.count() == 0:
                 raise IpNotFoundError(None)
 
-            if valid == True:
+            if valid is True:
                 return Ipv6.objects.get(block1=block1, block2=block2, block3=block3, block4=block4, block5=block5,
                                     block6=block6, block7=block7, block8=block8, networkipv6__ambient_vip__id=id_evip)
             else:
@@ -2155,12 +2156,11 @@ class Ipv6(BaseModel):
                         if ip.networkipv6.ambient_vip.id == id_evip:
                             return ip
                     else:
-                        environments = Ambiente.objects.filter(
-                            vlan__networkipv6__ambient_vip__id=id_evip)
-                        for env in environments:
-                            if ip.networkipv6.vlan.ambiente.divisao_dc.id == env.divisao_dc.id \
-                                    and ip.networkipv6.vlan.ambiente.ambiente_logico.id == env.ambiente_logico.id:
-                                return ip
+                        ip_ambiente_id = ip.networkipv6.vlan.ambiente.id
+
+                        if EnvironmentEnvironmentVip.envrionmnet_is_related_to_environment_vip(ip_ambiente_id, id_evip):
+                            return ip
+
                 raise ObjectDoesNotExist()
 
         except ObjectDoesNotExist, e:

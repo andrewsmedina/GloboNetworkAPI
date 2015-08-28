@@ -126,7 +126,7 @@ class Ipv4GetAvailableForVipResource(RestResource):
 
                     if cont_balanceador_not_found == len_network:
                         raise_not_found_balanceamento = True
-                        raise IpNotAvailableError(None, "Não há ipv4 disponivel para as redes associdas com o Ambiente Vip: %s - %s - %s, pois não existe equipamentos do Tipo Balanceador nessas redes." % (
+                        raise IpNotAvailableError(None, "Não há ipv4 disponivel para as redes associadas com o Ambiente Vip: %s - %s - %s, pois não existe equipamentos do Tipo Balanceador nessas redes." % (
                             evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
                 except (IpNotAvailableError, IpRangeAlreadyAssociation), e:
@@ -134,7 +134,7 @@ class Ipv4GetAvailableForVipResource(RestResource):
                     if raise_not_found_balanceamento:
                         raise IpNotAvailableError(None, e.message)
                     elif len_network == cont_network:
-                        raise IpNotAvailableError(None, "Não há ipv4 disponivel para as redes associdas com o Ambiente Vip: %s - %s - %s" % (
+                        raise IpNotAvailableError(None, "Não há ipv4 disponivel para as redes associadas com o Ambiente Vip: %s - %s - %s" % (
                             evip.finalidade_txt, evip.cliente_txt, evip.ambiente_p44_txt))
 
             return self.response(dumps_networkapi({"ip": model_to_dict(ip_new)}))

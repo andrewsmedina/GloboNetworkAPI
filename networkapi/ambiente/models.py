@@ -1192,3 +1192,14 @@ class EnvironmentEnvironmentVip(BaseModel):
         env_envivip_list = EnvironmentEnvironmentVip.objects.filter(environment_vip=environment_vip)
         environment_list = [env_envivip.environment for env_envivip in env_envivip_list]
         return environment_list
+
+    @classmethod
+    def envrionmnet_is_related_to_environment_vip(cls, environment_id, environment_vip_id):
+        """
+        Check if environment is in environment_vip's list of environments
+        :param environment_id: environment to check
+        :param environment_vip_id: environment vip id to compare
+        :return: boolean
+        """
+        return cls.objects.filter(environment_id=environment_id,
+                                  environment_vip_id=environment_vip_id).count() > 0

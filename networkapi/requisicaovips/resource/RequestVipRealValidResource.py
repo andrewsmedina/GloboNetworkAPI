@@ -62,7 +62,10 @@ class RequestVipRealValidResource(RestResource):
             ip = real_map.get('ip')
             name = real_map.get('name_equipment')
             id_evip = real_map.get('id_environment_vip')
-            valid = real_map.get('valid')
+            valid = True
+
+            if real_map.get('valid').capitalize() == u'False':
+                valid = False
 
             # User permission
             if not has_perm(user, AdminPermission.VIPS_REQUEST, AdminPermission.READ_OPERATION):
