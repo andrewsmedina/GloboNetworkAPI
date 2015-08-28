@@ -1013,7 +1013,7 @@ class Ip(BaseModel):
                     else:
                         ip_env_id = ip.networkipv4.vlan.ambiente.id
 
-                        if EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, id_evip):
+                        if EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(ip_env_id, id_evip):
                             return ip
 
                 raise ObjectDoesNotExist()
@@ -2160,7 +2160,7 @@ class Ipv6(BaseModel):
                     else:
                         ip_env_id = ip.networkipv6.vlan.ambiente.id
 
-                        if EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, id_evip):
+                        if EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(ip_env_id, id_evip):
                             return ip
 
                 raise ObjectDoesNotExist()

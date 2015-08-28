@@ -118,7 +118,7 @@ def save(request):
 
     obj_req_vip = req_vip_serializer.object
 
-    # valid if pools member can linked by environment/environment vip relationship rule
+    # valid if pools member can be linked by environment/environment vip relationship rule
     server_pool_ips_can_associate_with_vip_request(obj_req_vip)
 
     obj_req_vip.filter_valid = True
@@ -230,8 +230,6 @@ def _get_server_pool_list(vip_request):
 def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip):
 
     try:
-        environment_list_related = EnvironmentEnvironmentVip.get_environment_list_by_environment_vip(environment_vip)
-
         ipv4_list, ipv6_list = [], []
 
         for server_pool_member in server_pool_member_list:
@@ -241,15 +239,17 @@ def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_po
                 ipv6_list.append(server_pool_member.ipv6)
 
         for ipv4 in ipv4_list:
-            environment = Ambiente.objects.filter(vlan__networkipv4__ip=ipv4).uniqueResult()
-            if environment not in environment_list_related:
+            environment = ipv4.networkipv4.vlan.ambiente
+            if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
+                                                                                       environment_vip.id):
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
                     error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip.name)
                 )
 
         for ipv6 in ipv6_list:
-            environment = Ambiente.objects.filter(vlan__networkipv6__ipv6=ipv6).uniqueResult()
-            if environment not in environment_list_related:
+            environment = ipv4.networkipv6.vlan.ambiente
+            if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
+                                                                                       environment_vip.id):
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
                     error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
                 )

@@ -1436,7 +1436,7 @@ class RequisicaoVips(BaseModel):
             if valid is True:
                 ip_env_id = ip.networkipv4.vlan.ambiente.id
 
-                if not EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, evip.id):
+                if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(ip_env_id, evip.id):
                     raise IpNotFoundByEquipAndVipError(None, u'Ipv4 não está relacionado com '
                                                              'Ambiente Vip: %s' % evip.name)
 
@@ -1453,7 +1453,7 @@ class RequisicaoVips(BaseModel):
             if valid is True:
                 ip_env_id = ip.networkipv6.vlan.ambiente.id
 
-                if not EnvironmentEnvironmentVip.environmnet_is_related_to_environment_vip(ip_env_id, evip.id):
+                if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(ip_env_id, evip.id):
                     raise IpNotFoundByEquipAndVipError(None, u'Ipv4 não está relacionado com '
                                                              'Ambiente Vip: %s' % evip.name)
 
