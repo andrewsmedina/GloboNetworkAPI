@@ -323,7 +323,7 @@ class RequisicaoVipsResource(RestResource):
             return self.not_authorized()
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError):
             return self.response_error(1)
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
 
     def handle_get(self, request, user, *args, **kwargs):

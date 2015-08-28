@@ -285,7 +285,7 @@ class RequestVipsResource(RestResource):
             return self.response_error(334, e.message)
         except Rule.DoesNotExist:
             return self.response_error(358)
-        except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
+        except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError):
             return self.response_error(1)
 
     @deprecated(new_uri='api/vip/request/save/<pk>/')

@@ -552,7 +552,7 @@ class RequestVipRealEditResource(RestResource):
             return self.response_error(130, transbordo)
         except UserNotAuthorizedError:
             return self.not_authorized()
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
         except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
             return self.response_error(1)

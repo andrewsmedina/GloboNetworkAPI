@@ -247,7 +247,7 @@ class RequestMaxconResource(RestResource):
         except InvalidPriorityValueError:
             return self.response_error(325)
 
-        except EquipamentoNotFoundError, e:
+        except EquipamentoNotFoundError:
             return self.response_error(326, equip_aux_error)
 
         except IpEquipmentNotFoundError:
@@ -289,8 +289,8 @@ class RequestMaxconResource(RestResource):
         except UserNotAuthorizedError:
             return self.not_authorized()
 
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
 
-        except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError), e:
+        except (RequisicaoVipsError, EquipamentoError, IpError, HealthcheckExpectError, GrupoError):
             return self.response_error(1)

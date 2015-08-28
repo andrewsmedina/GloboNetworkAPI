@@ -129,7 +129,7 @@ class RequestVipRealValidResource(RestResource):
             return self.response_error(283)
         except EquipamentoNotFoundError:
             return self.response_error(117, name)
-        except IpNotFoundByEquipAndVipError:
+        except IpNotFoundByEquipAndVipError, e:
             return self.response_error(334, e.message)
         except (IpError):
             return self.response_error(1)
