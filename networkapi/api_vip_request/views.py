@@ -87,7 +87,7 @@ def add_pools(request):
                 if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
                                                                                            environment_vip.id):
                     raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                        error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip.name)
+                        error_messages.get(398) % (environment.name, ipv4.ip_formated, environment_vip.name)
                     )
 
             for ipv6 in ipv6_list:
@@ -96,7 +96,7 @@ def add_pools(request):
                 if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
                                                                                            environment_vip.id):
                     raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                        error_messages.get(396) % (pool_obj.environment.name, ipv6.ip_formated, environment_vip.name)
+                        error_messages.get(398) % (pool_obj.environment.name, ipv6.ip_formated, environment_vip.name)
                 )
 
             vip_port_pool_obj = VipPortToPool(
@@ -120,6 +120,10 @@ def add_pools(request):
     except DuplicatedVipPortException, exception:
         log.error(exception)
         raise exceptions.DuplicatedVipPortForVipRequestPoolException()
+
+    except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
+        log.error(exception)
+        raise exceptions.EnvironmentEnvironmentVipNotBoundedException()
 
     except Exception, exception:
         log.error(exception)

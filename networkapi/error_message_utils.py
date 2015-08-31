@@ -319,7 +319,8 @@ error_messages = {
     393: u'Environment is not associated with the environment vip',
     394: u'O ambiente %s não pode ser desvinculado pois existem server pools com reals vinculados a este ambiente.',
     396: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com um dos ambientes vips "%s".',
-    397: u'A porta %s já está sendo usada para a requisição vip: "%s".'
+    397: u'A porta %s já está sendo usada para a requisição vip: "%s".',
+    398: u'A operação não pode ser realizada pois o ambiente "%s" do ip %s não possui permissão com o ambiente vip: "%s".'
 }
 
 
