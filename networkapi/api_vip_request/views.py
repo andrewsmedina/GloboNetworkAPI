@@ -123,7 +123,7 @@ def add_pools(request):
 
     except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
         log.error(exception)
-        raise exceptions.EnvironmentEnvironmentVipNotBoundedException()
+        raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException()
 
     except Exception, exception:
         log.error(exception)
