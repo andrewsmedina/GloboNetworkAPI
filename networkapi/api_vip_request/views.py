@@ -38,13 +38,6 @@ from networkapi.api_vip_request import facade
 
 log = Log(__name__)
 
-
-class DuplicatedVipPortException(Exception):
-    """
-    Duplicated port for VipPortPool
-    """
-    pass
-
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
@@ -78,7 +71,7 @@ def add_pools(request):
             ipv6_list = [obj.ipv6 for obj in ipv6_list]
 
             if VipPortToPool.objects.filter(port_vip=pool_obj.default_port, requisicao_vip=vip_request_obj).count() > 0:
-                raise DuplicatedVipPortException(
+                raise exceptions.DuplicatedVipPortForVipRequestPoolException(
                     error_messages.get(397) % (pool_obj.default_port, vip_request_obj.id))
 
             for ipv4 in ipv4_list:
@@ -117,13 +110,13 @@ def add_pools(request):
         log.error(exception)
         raise pool_exceptions.PoolDoesNotExistException()
 
-    except DuplicatedVipPortException, exception:
+    except exceptions.DuplicatedVipPortForVipRequestPoolException, exception:
         log.error(exception)
-        raise exceptions.DuplicatedVipPortForVipRequestPoolException()
+        raise exception
 
     except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
         log.error(exception)
-        raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException()
+        raise exception
 
     except Exception, exception:
         log.error(exception)
