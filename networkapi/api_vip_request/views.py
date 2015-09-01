@@ -35,8 +35,8 @@ from networkapi.api_vip_request.serializers import EnvironmentOptionsSerializer
 from networkapi.exception import InvalidValueError, EnvironmentVipNotFoundError
 from networkapi.api_vip_request import facade
 
-
 log = Log(__name__)
+
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, Read))
@@ -48,49 +48,25 @@ def add_pools(request):
     try:
         pool_ids = request.DATA.get('pool_ids')
         vip_request_id = request.DATA.get('vip_request_id')
-
         vip_request_obj = RequisicaoVips.objects.get(id=vip_request_id)
+        variable_map = vip_request_obj.variables_to_map()
+        environment_vip = EnvironmentVip.get_by_values(variable_map.get('finalidade'), variable_map.get('cliente'),
+                                                       variable_map.get('ambiente'))
 
         for pool_id in pool_ids:
 
+            facade.validate_server_pool_with_environment_vip(pool_id, environment_vip)
+
             pool_obj = ServerPool.objects.get(id=pool_id)
 
-            # verificar se o Ambiente de cada IP do Pool é
-            # igual ao Ambiente vinculado ao AmbienteVIP da RequisicaoVIP
-
-            server_pool_member_list = pool_obj.serverpoolmember_set.all()
-            variable_map = vip_request_obj.variables_to_map()
-            environment_vip = EnvironmentVip.get_by_values(variable_map.get('finalidade'),
-                                                           variable_map.get('cliente'),
-                                                           variable_map.get('ambiente'))
-
-            ipv4_list = [obj for obj in server_pool_member_list if obj.ip]
-            ipv6_list = set(server_pool_member_list) - set(ipv4_list)
-
-            ipv4_list = [obj.ip for obj in ipv4_list]
-            ipv6_list = [obj.ipv6 for obj in ipv6_list]
-
+            # valida porta duplicada
             if VipPortToPool.objects.filter(port_vip=pool_obj.default_port, requisicao_vip=vip_request_obj).count() > 0:
                 raise exceptions.DuplicatedVipPortForVipRequestPoolException(
                     error_messages.get(397) % (pool_obj.default_port, vip_request_obj.id))
 
-            for ipv4 in ipv4_list:
-                environment = ipv4.networkipv4.vlan.ambiente
-
-                if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
-                                                                                           environment_vip.id):
-                    raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                        error_messages.get(398) % (environment.name, ipv4.ip_formated, environment_vip.name)
-                    )
-
-            for ipv6 in ipv6_list:
-                environment = ipv6.networkipv6.vlan.ambiente
-
-                if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
-                                                                                           environment_vip.id):
-                    raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                        error_messages.get(398) % (pool_obj.environment.name, ipv6.ip_formated, environment_vip.name)
-                )
+            # verificar se o Ambiente de cada IP do Pool é
+            # igual ao Ambiente vinculado ao AmbienteVIP da RequisicaoVIP
+            facade.validate_ips_of_server_pool(pool_obj, environment_vip)
 
             vip_port_pool_obj = VipPortToPool(
                 requisicao_vip=vip_request_obj,
@@ -115,6 +91,10 @@ def add_pools(request):
         raise exception
 
     except api_exceptions.EnvironmentEnvironmentVipNotBoundedException, exception:
+        log.error(exception)
+        raise exception
+
+    except pool_exceptions.PoolNotRelatedToEnvironmentVipException, exception:
         log.error(exception)
         raise exception
 
@@ -172,7 +152,6 @@ def delete(request):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def list_environment_by_environment_vip(request, environment_vip_id):
-
     try:
 
         env_vip = EnvironmentVip.objects.get(id=environment_vip_id)
@@ -202,7 +181,6 @@ def list_environment_by_environment_vip(request, environment_vip_id):
 @permission_classes((IsAuthenticated, Write))
 @commit_on_success
 def save(request, pk=None):
-
     try:
 
         if request.method == "POST":
@@ -246,7 +224,6 @@ def save(request, pk=None):
 @permission_classes((IsAuthenticated, Read))
 @commit_on_success
 def get_by_pk(request, pk):
-
     try:
 
         data = facade.get_by_pk(pk)

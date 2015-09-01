@@ -17,17 +17,18 @@
  limitations under the License.
  """
 from django.forms import model_to_dict
-from networkapi.api_pools.views import reals_can_associate_server_pool
+from django.db.models import Q
 from networkapi.distributedlock import distributedlock, LOCK_VIP
 from networkapi.error_message_utils import error_messages
-from networkapi.exception import EnvironmentEnvironmentVipNotFoundError
 from networkapi.ambiente.models import EnvironmentEnvironmentVip, Ambiente, EnvironmentVip
+from networkapi.requisicaovips.models import ServerPool
 from networkapi.log import Log
 from networkapi.api_vip_request.serializers import RequestVipSerializer, VipPortToPoolSerializer
 from networkapi.requisicaovips.models import RequisicaoVips, VipPortToPool, ServerPool
 from networkapi.util import is_valid_int_greater_zero_param, convert_boolean_to_int
 from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
+from networkapi.api_pools import exceptions as pool_exceptions
 
 
 log = Log(__name__)
@@ -297,3 +298,69 @@ def _get_validation_params(ip, server_pool, env_vip_description, ip_type='ipv4')
         env_description = '{} - {} - {}'.format(env.divisao_dc.nome, env.ambiente_logico.nome, env.grupo_l3.nome)
 
     return [ip.ip_formated, server_pool.identifier, env_description, env_vip_description]
+
+
+def _get_ipv4_and_ipv6_list_from_server_pool(server_pool):
+    server_pool_member_list = server_pool.serverpoolmember_set.all()
+
+    ipv4_list = [obj for obj in server_pool_member_list if obj.ip]
+    ipv6_list = set(server_pool_member_list) - set(ipv4_list)
+
+    ipv4_list = [obj.ip for obj in ipv4_list]
+    ipv6_list = [obj.ipv6 for obj in ipv6_list]
+
+    return ipv4_list, ipv6_list
+
+
+def validate_ips_of_server_pool(server_pool, environment_vip):
+    """
+    Checks if every IP's environment from Server Pool is related to Environment VIP
+    :param server_pool:
+    :param environment_vip:
+    :return:
+    """
+
+    ipv4_list, ipv6_list = _get_ipv4_and_ipv6_list_from_server_pool(server_pool)
+
+    for ipv4 in ipv4_list:
+        environment = ipv4.networkipv4.vlan.ambiente
+
+        if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
+                                                                                   environment_vip.id):
+            raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                error_messages.get(398) % (environment.name, ipv4.ip_formated, environment_vip.name)
+            )
+
+    for ipv6 in ipv6_list:
+        environment = ipv6.networkipv6.vlan.ambiente
+
+        if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
+                                                                                   environment_vip.id):
+            raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
+                error_messages.get(398) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
+            )
+
+    return True
+
+
+def validate_server_pool_with_environment_vip(server_pool_id, environment_vip):
+    """
+    Checks if server_pool_id has a relation with environment vip
+    :param server_pool_id: interger
+    :param environment_vip: EnvironmentVip object
+    :raise: pool_exceptions.PoolNotRelatedToEnvironmentVipException
+    :return: boolean
+    """
+    server_pool_list = ServerPool.objects.filter(id=server_pool_id).filter(
+        Q(environment__vlan__networkipv4__ambient_vip=environment_vip) |
+        Q(environment__vlan__networkipv6__ambient_vip=environment_vip)
+    ).distinct().count()
+
+    if not server_pool_list > 0:
+        raise pool_exceptions.PoolNotRelatedToEnvironmentVipException(
+            'O server pool %s possui um ambiente relacionado com o Ambiente Vip: %s' % (
+                server_pool_id, environment_vip.name
+            )
+        )
+
+    return True
