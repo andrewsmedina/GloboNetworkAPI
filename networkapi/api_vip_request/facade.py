@@ -358,9 +358,12 @@ def validate_server_pool_with_environment_vip(server_pool_id, environment_vip):
     ).distinct().count()
 
     if not server_pool_list > 0:
+        server_pool = ServerPool.objects.get(id=server_pool_id)
         raise pool_exceptions.PoolNotRelatedToEnvironmentVipException(
-            'O server pool %s possui um ambiente relacionado com o Ambiente Vip: %s' % (
-                server_pool_id, environment_vip.name
+            error_messages.get(399) % (
+                server_pool.environment.name,
+                server_pool.identifier,
+                environment_vip.name
             )
         )
 
