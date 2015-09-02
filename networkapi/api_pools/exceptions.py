@@ -11,9 +11,11 @@ class PoolMemberDoesNotExistException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Pool Member Does Not Exist.'
 
+
 class InvalidIdPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Pool.'
+
 
 class InvalidIdEnvironmentException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -34,6 +36,7 @@ class InvalidIdentifierFistDigitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'The first character of the identifier field can not be a number.'
 
+
 class CreatedPoolIdentifierException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Pool already created. Cannot change Identifier.'
@@ -42,6 +45,7 @@ class CreatedPoolIdentifierException(APIException):
 class InvalidIdPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Invalid id for Pool Member.'
+
 
 class ScriptRemovePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -77,14 +81,17 @@ class ScriptDisablePoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute disable script for pool.'
 
+
 class ScriptAlterLimitPoolException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to execute limits script for pool.'
+
 
 class ScriptAlterLimitPoolDiffMembersException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Failed to change limits for pool. Members limit differs from pool default limit \
     Set all members with the same default limit before changing default pool limit.'
+
 
 class PoolConstraintVipException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
@@ -95,9 +102,11 @@ class UpdateEnvironmentVIPException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Ambiente nao pode ser alterado pois o server pool esta associado com um ou mais VIP.'
 
+
 class UpdateEnvironmentPoolCreatedException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
     default_detail = 'Ambiente nao pode ser alterado pois o server pool ja esta criado no equipamento.'
+
 
 class UpdateEnvironmentServerPoolMemberException(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
