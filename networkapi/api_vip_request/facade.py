@@ -241,7 +241,7 @@ def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_po
             if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
                                                                                        environment_vip.id):
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(396) % (environment.name, ipv4.ip_formated, environment_vip.name)
+                    error_messages.get(398) % (environment.name, ipv4.ip_formated, environment_vip.name)
                 )
 
         for ipv6 in ipv6_list:
@@ -249,7 +249,7 @@ def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_po
             if not EnvironmentEnvironmentVip.environment_is_related_to_environment_vip(environment.id,
                                                                                        environment_vip.id):
                 raise api_exceptions.EnvironmentEnvironmentVipNotBoundedException(
-                    error_messages.get(396) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
+                    error_messages.get(398) % (server_pool.environment.name, ipv6.ip_formated, environment_vip.name)
                 )
 
     except Exception, error:
