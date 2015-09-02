@@ -215,6 +215,10 @@ def save(request, pk=None):
         log.error(exception)
         raise exception
 
+    except pool_exceptions.PoolNotRelatedToEnvironmentVipException, exception:
+        log.error(exception)
+        raise exception
+
     except Exception, exception:
         log.error(exception)
         raise api_exceptions.NetworkAPIException()

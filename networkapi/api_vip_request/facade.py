@@ -30,7 +30,6 @@ from networkapi.api_vip_request import exceptions
 from networkapi.api_rest import exceptions as api_exceptions
 from networkapi.api_pools import exceptions as pool_exceptions
 
-
 log = Log(__name__)
 
 
@@ -203,7 +202,6 @@ def update(request, pk):
 
 
 def set_l7_filter_for_vip(obj_req_vip):
-
     if obj_req_vip.rule:
         obj_req_vip.l7_filter = '\n'.join(
             obj_req_vip.rule.rulecontent_set.all().values_list(
@@ -214,7 +212,6 @@ def set_l7_filter_for_vip(obj_req_vip):
 
 
 def _get_server_pool_list(vip_request):
-
     server_pool_list = set()
 
     # server pool already related
@@ -228,8 +225,8 @@ def _get_server_pool_list(vip_request):
     return list(server_pool_list)
 
 
-def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip):
-
+def _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list,
+                                                                       environment_vip):
     try:
         ipv4_list, ipv6_list = [], []
 
@@ -270,9 +267,9 @@ def _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove):
 
 
 def server_pool_ips_can_associate_with_vip_request(vip_request, vip_port_to_pool_to_remove=[]):
-
     try:
-        environment_vip = EnvironmentVip.get_by_values(vip_request.finalidade, vip_request.cliente, vip_request.ambiente)
+        environment_vip = EnvironmentVip.get_by_values(vip_request.finalidade, vip_request.cliente,
+                                                       vip_request.ambiente)
 
         server_pool_list_add_list = _get_server_pool_list(vip_request)
         server_pool_list_remove_list = _get_server_pool_list_by_vip_port_to_pool(vip_port_to_pool_to_remove)
@@ -281,7 +278,12 @@ def server_pool_ips_can_associate_with_vip_request(vip_request, vip_port_to_pool
 
             if server_pool not in server_pool_list_remove_list:
                 server_pool_member_list = server_pool.serverpoolmember_set.all()
-                _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list, environment_vip)
+                validate_server_pool_with_environment_vip(server_pool.id, environment_vip)
+                _reals_can_associate_server_pool_by_environment_vip_on_request_vip(server_pool, server_pool_member_list,
+                                                                                   environment_vip)
+
+    except pool_exceptions.PoolNotRelatedToEnvironmentVipException, exception:
+        raise exception
 
     except Exception, error:
         log.error(error)
@@ -289,7 +291,6 @@ def server_pool_ips_can_associate_with_vip_request(vip_request, vip_port_to_pool
 
 
 def _get_validation_params(ip, server_pool, env_vip_description, ip_type='ipv4'):
-
     if ip_type == 'ipv4':
         env = ip.networkipv4.vlan.ambiente
         env_description = '{} - {} - {}'.format(env.divisao_dc.nome, env.ambiente_logico.nome, env.grupo_l3.nome)
